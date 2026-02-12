@@ -10,8 +10,8 @@ async function HomeContent() {
   try {
     const data = await AnimeAPI.getHome();
 
-    const hasOngoing = data.ongoing.data.length > 0;
-    const hasCompleted = data.completed.data.length > 0;
+    const hasOngoing = (data?.ongoing?.data?.length ?? 0) > 0;
+    const hasCompleted = (data?.completed?.data?.length ?? 0) > 0;
 
     if (!hasOngoing && !hasCompleted) {
       return <EmptyState title="No anime available" message="Check back later for new content." />;

@@ -20,7 +20,11 @@ const apiClient = axios.create({
 export class AnimeAPI {
   static async getHome(): Promise<HomeResponse> {
     const response = await apiClient.get("/");
-    return response.data;
+    const data = response.data ?? {};
+    return {
+      ongoing: data.ongoing ?? { count: 0, data: [] },
+      completed: data.completed ?? { count: 0, data: [] },
+    };
   }
 
   static async getOngoingAnime(page: number = 1): Promise<ListResponse> {
