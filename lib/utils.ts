@@ -5,8 +5,14 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function sanitizeHtml(html: string): string {
-  return html
+/**
+ * Escapes HTML special characters in text content to prevent XSS attacks.
+ * This is for escaping text only, not for sanitizing HTML markup.
+ * Renamed from sanitizeHtml to clarify its purpose.
+ */
+export function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
