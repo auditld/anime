@@ -55,36 +55,42 @@ A modern, clean web anime streaming application built with Next.js 14, TypeScrip
 
 ## 🔌 API Integration
 
-The application uses the API defined in `api.txt`. Here's how the endpoints map to features:
+The application uses the [wajik-anime-api](https://github.com/wajik45/wajik-anime-api) as its backend, specifically the **otakudesu** source. See [API_DOCUMENTATION.md](API_DOCUMENTATION.md) for detailed endpoint information.
 
 ### Available Endpoints
 
-1. **Home** (`/`) 
+All endpoints are prefixed with `/otakudesu/`:
+
+1. **Home** (`/otakudesu/home`) 
    - Returns ongoing and completed anime sections
    - Used on: Home page
 
-2. **Ongoing Anime** (`/ongoing-anime/page/{page}`)
+2. **Ongoing Anime** (`/otakudesu/ongoing?page={page}`)
    - Paginated list of ongoing anime
    - Used on: Ongoing page with pagination
 
-3. **Completed Anime** (`/complete-anime/page/{page}`)
+3. **Completed Anime** (`/otakudesu/completed?page={page}`)
    - Paginated list of completed anime
    - Used on: Completed page with pagination
 
-4. **Search** (`/?s={query}&post_type=anime`)
+4. **Search** (`/otakudesu/search?q={query}`)
    - Search anime by title
    - Used on: Search page
    - Features: Real-time search with genre and status display
 
-5. **Anime Details** (`/anime/{slug}`)
+5. **Anime Details** (`/otakudesu/anime/{animeId}`)
    - Full anime information with episodes and recommendations
    - Used on: Anime detail page
    - Features: Synopsis, genres, ratings, episode list, recommendations
 
-6. **Episode Details** (`/episode/{slug}`)
-   - Episode streaming with multiple mirrors and downloads
+6. **Episode Details** (`/otakudesu/episode/{episodeId}`)
+   - Episode streaming with server list and downloads
    - Used on: Watch page
-   - Features: Video player, quality selection, navigation, download links
+   - Features: Video player, server selection, navigation, download links
+
+7. **Server Resolution** (`/otakudesu/server/{serverId}`)
+   - Resolves actual video streaming URLs from server IDs
+   - Used on: Watch page
 
 ## 🚀 Setup Instructions
 
@@ -110,10 +116,12 @@ The application uses the API defined in `api.txt`. Here's how the endpoints map 
    cp .env.example .env
    ```
    
-   Edit `.env` and set your API base URL:
+   Edit `.env` and set your wajik-anime-api base URL:
    ```
-   NEXT_PUBLIC_API_URL=https://your-api-url.com
+   NEXT_PUBLIC_API_URL=http://localhost:3001
    ```
+   
+   You need a running instance of [wajik-anime-api](https://github.com/wajik45/wajik-anime-api). Follow its setup instructions to start the API server.
 
 4. **Run the development server**
    ```bash
@@ -144,24 +152,24 @@ npm run lint
 
 ## 📝 Assumptions & Notes
 
-Based on the API structure in `api.txt`, the following assumptions were made:
+Based on the [wajik-anime-api](https://github.com/wajik45/wajik-anime-api), the following assumptions were made:
 
-1. **API Response Format**: All endpoints return JSON with a `success` boolean and `data` field
-2. **Image URLs**: Thumbnail URLs are either absolute (https://) or relative paths
-3. **Pagination**: Available through `pagination.available_pages` array and `next_page` URL
-4. **Slugs**: Anime and episode identifiers are URL-friendly slugs
-5. **Video Mirrors**: Episode mirrors may require token resolution for actual video URLs
-6. **Genres**: Available as arrays in anime info objects
+1. **API Response Format**: All endpoints return JSON wrapped in `{ statusCode, statusMessage, message, data, pagination }` format
+2. **Image URLs**: Poster/thumbnail URLs are absolute (https://) URLs from otakudesu
+3. **Pagination**: Available through `currentPage`/`totalPages` in the pagination object
+4. **IDs**: Anime, episode, and server identifiers are string-based IDs
+5. **Video Servers**: Episode servers require a separate resolution call to `/otakudesu/server/{serverId}` for actual video URLs
+6. **Genres**: Available as `genreList` arrays with `{ title, genreId }` objects
 7. **No Authentication**: The API doesn't require authentication tokens
 8. **CORS**: Assumes the API has CORS enabled for browser requests
 
 ### Known Limitations
 
-1. **API Dependency**: The app requires a working API server (not included in this repository)
-2. **Video Player**: Uses iframe embedding; advanced features depend on the video provider
+1. **API Dependency**: The app requires a running [wajik-anime-api](https://github.com/wajik45/wajik-anime-api) instance
+2. **Video Player**: Uses iframe embedding; server URLs are resolved on demand
 3. **No User Accounts**: Continue watching is stored locally only
-4. **No Filters Beyond Search**: Genre/status filters not implemented (API doesn't expose filter endpoints)
-5. **Static Pagination**: Page numbers are based on available_pages array from API
+4. **No Filters Beyond Search**: Genre/status filters not implemented in the UI
+5. **Pagination**: Page numbers are computed from `totalPages` in the API response
 
 ## 🎨 Design Features
 
@@ -197,7 +205,7 @@ Based on the API structure in `api.txt`, the following assumptions were made:
 
 ### Watch Page
 - Full-screen video player
-- Multiple quality/server options
+- Multiple server/quality options
 - Episode navigation (prev/next)
 - Complete episode list
 - Download links organized by quality

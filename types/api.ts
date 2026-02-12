@@ -1,4 +1,6 @@
-// API Response Types based on api.txt
+// API Response Types for wajik-anime-api (otakudesu source)
+
+// Internal types used by page components
 
 export interface AnimeItem {
   title: string;
@@ -73,7 +75,7 @@ export interface AnimeDetailResponse {
 export interface Mirror {
   quality: string;
   provider: string;
-  token: string;
+  serverId: string;
   url?: string | null;
 }
 
@@ -122,4 +124,138 @@ export interface SearchResponse {
   success: boolean;
   total_data: number;
   data: AnimeItem[];
+}
+
+// Wajik-anime-api response wrapper types
+
+export interface WajikResponse<T = Record<string, any>> {
+  statusCode: number;
+  statusMessage: string;
+  message: string;
+  data: T | null;
+  pagination: WajikPagination | null;
+}
+
+export interface WajikPagination {
+  currentPage: number | null;
+  prevPage: number | null;
+  hasPrevPage: boolean;
+  nextPage: number | null;
+  hasNextPage: boolean;
+  totalPages: number | null;
+}
+
+// Wajik otakudesu-specific data types
+
+export interface WajikTextCard {
+  title: string;
+  otakudesuUrl?: string;
+}
+
+export interface WajikOngoingAnimeCard extends WajikTextCard {
+  animeId: string;
+  poster: string;
+  episodes: string;
+  releaseDay: string;
+  latestReleaseDate: string;
+}
+
+export interface WajikCompletedAnimeCard extends WajikTextCard {
+  animeId: string;
+  poster: string;
+  episodes: string;
+  score: string;
+  lastReleaseDate: string;
+}
+
+export interface WajikSearchedAnimeCard extends WajikTextCard {
+  animeId: string;
+  poster: string;
+  status: string;
+  score: string;
+  genreList: WajikGenreCard[];
+}
+
+export interface WajikGenreCard extends WajikTextCard {
+  genreId: string;
+}
+
+export interface WajikEpisodeCard extends WajikTextCard {
+  episodeId: string;
+}
+
+export interface WajikRecommendedAnimeCard extends WajikTextCard {
+  animeId: string;
+  poster: string;
+}
+
+export interface WajikSynopsis {
+  paragraphList: string[];
+}
+
+export interface WajikBatchCard extends WajikTextCard {
+  batchId: string;
+}
+
+export interface WajikAnimeDetails {
+  title: string;
+  japanese: string;
+  score: string;
+  producers: string;
+  type: string;
+  status: string;
+  episodes: string;
+  duration: string;
+  aired: string;
+  studios: string;
+  poster: string;
+  synopsis: WajikSynopsis;
+  batch: WajikBatchCard | null;
+  genreList: WajikGenreCard[];
+  episodeList: WajikEpisodeCard[];
+  recommendedAnimeList: WajikRecommendedAnimeCard[];
+}
+
+export interface WajikServerEntry {
+  title: string;
+  serverId: string;
+}
+
+export interface WajikQuality {
+  title: string;
+  size?: string;
+  urlList?: { title: string; url: string }[];
+  serverList?: WajikServerEntry[];
+}
+
+export interface WajikEpisodeDetails {
+  title: string;
+  animeId: string;
+  releaseTime: string;
+  defaultStreamingUrl: string;
+  hasPrevEpisode: boolean;
+  prevEpisode: WajikEpisodeCard | null;
+  hasNextEpisode: boolean;
+  nextEpisode: WajikEpisodeCard | null;
+  server: { qualityList: WajikQuality[] };
+  download: { qualityList: WajikQuality[] };
+  info: {
+    credit: string;
+    encoder: string;
+    duration: string;
+    type: string;
+    genreList: WajikGenreCard[];
+    episodeList: WajikEpisodeCard[];
+  };
+}
+
+export interface WajikHomeData {
+  ongoing: {
+    otakudesuUrl?: string;
+    animeList: WajikOngoingAnimeCard[];
+  };
+  completed: {
+    otakudesuUrl?: string;
+    animeList: WajikCompletedAnimeCard[];
+  };
 }
