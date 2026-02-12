@@ -19,6 +19,8 @@ export default function WatchPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedMirror, setSelectedMirror] = useState<number>(0);
+  const [resolvedUrl, setResolvedUrl] = useState<string | null>(null);
+  const [resolvingServer, setResolvingServer] = useState(false);
 
   useEffect(() => {
     const loadEpisode = async () => {
@@ -32,7 +34,7 @@ export default function WatchPage() {
         if (response.data && animeSlug) {
           continueWatchingStorage.add({
             animeSlug: animeSlug,
-            animeTitle: response.data.info.judul || response.data.title,
+            animeTitle: response.data.title,
             episodeSlug: slug,
             episodeTitle: response.data.title,
             thumbnail: response.data.info.thumbnail || "",
@@ -48,6 +50,32 @@ export default function WatchPage() {
 
     loadEpisode();
   }, [slug, animeSlug]);
+
+  // Resolve server URL when a mirror is selected
+  useEffect(() => {
+    const resolveMirror = async () => {
+      if (!episode || episode.mirrors.length === 0) return;
+      const mirror = episode.mirrors[selectedMirror];
+      if (!mirror) return;
+
+      if (mirror.url) {
+        setResolvedUrl(mirror.url);
+        return;
+      }
+
+      setResolvingServer(true);
+      try {
+        const url = await AnimeAPI.getServerUrl(mirror.serverId);
+        setResolvedUrl(url);
+      } catch {
+        setResolvedUrl(null);
+      } finally {
+        setResolvingServer(false);
+      }
+    };
+
+    resolveMirror();
+  }, [episode, selectedMirror]);
 
   if (loading) {
     return (
@@ -83,22 +111,20 @@ export default function WatchPage() {
   }
 
   const currentMirror = episode.mirrors[selectedMirror];
+  const videoUrl = resolvedUrl || episode.iframe;
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Video Player */}
       <div className="mb-6">
         <div className="aspect-video bg-black rounded-lg overflow-hidden">
-          {currentMirror?.url ? (
+          {resolvingServer ? (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-white">Loading video server...</p>
+            </div>
+          ) : videoUrl ? (
             <iframe
-              src={currentMirror.url}
-              className="w-full h-full"
-              allowFullScreen
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            />
-          ) : episode.iframe ? (
-            <iframe
-              src={episode.iframe}
+              src={videoUrl}
               className="w-full h-full"
               allowFullScreen
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -118,7 +144,10 @@ export default function WatchPage() {
               {episode.mirrors.map((mirror, index) => (
                 <button
                   key={index}
-                  onClick={() => setSelectedMirror(index)}
+                  onClick={() => {
+                    setResolvedUrl(null);
+                    setSelectedMirror(index);
+                  }}
                   className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
                     selectedMirror === index
                       ? "bg-primary text-primary-foreground border-primary"
