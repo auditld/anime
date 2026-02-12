@@ -38,7 +38,9 @@ export class AnimeAPI {
   }
 
   static async searchAnime(query: string): Promise<SearchResponse> {
-    const response = await apiClient.get(`/?s=${encodeURIComponent(query)}&post_type=anime`);
+    const response = await apiClient.get("/", {
+      params: { s: query, post_type: "anime" },
+    });
     return response.data;
   }
 
